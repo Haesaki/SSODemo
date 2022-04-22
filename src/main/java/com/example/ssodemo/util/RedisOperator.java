@@ -17,8 +17,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @Title: Redis 工具类
- * @author 慕课网
+ * redis 工具
  */
 @Component
 public class RedisOperator {
