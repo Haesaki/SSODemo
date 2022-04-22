@@ -3,8 +3,11 @@ package com.example.ssodemo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.ComponentScans;
+import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
+@MapperScan(basePackages = {"com.example.ssodemo.mapper"})
 @ConfigurationProperties(prefix = "spring.datasource.hikari")
 public class SsoDemoApplication {
 

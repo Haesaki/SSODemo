@@ -29,7 +29,41 @@ SingleSingOn, SSO 单点登陆可以通过基于用户会话的共享。
 Central Authentication Serivce 用于不同顶级域名之间的单点登陆问题。
 
 ## 错误
-```shell
+1. Mapper 的Bean无法创建
+只是用mybatis的话 需要手动在mapper class的上面加上@Mapper标注他是mapper class, 但是我使用了tk去管理mybatis 这样就省去了简单的数据库操作需要写麻烦的xml配置文件的问题.
+```java
 WARN  AnnotationConfigServletWebServerApplicationContext:591 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'SSOController': Unsatisfied dependency expressed through field 'userService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userServiceImpl': Unsatisfied dependency expressed through field 'usersMapper'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.example.ssodemo.mapper.UsersMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
 ```
-为啥
+我是使用了 tk.mybatis.spring 去托管mybatis，没有设置扫描mapper扫描目录，就会出现无法创建Bean的情况， 加上就可以解决这个问题
+```java
+import tk.mybatis.spring.annotation.MapperScan;
+
+@SpringBootApplication
+@MapperScan(basePackages = {"com.example.ssodemo.mapper"})
+@ConfigurationProperties(prefix = "spring.datasource.hikari")
+public class SsoDemoApplication {}
+```
+
+2. dataSource 创建问题
+    这是由于 spring application.yml引入其他配置文件的方式好像过期了 原来是
+```yaml
+spring:
+  profiles:
+    active: dev # Deprecated configuration property 'spring.profiles' 
+  # 让你用这种方式去替代掉上面的这种配置 但是会出错 麻了
+  config:
+    activate:
+      on-profile: 
+```
+
+3. classloader 出错???
+```text
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'myMapper' defined in file 
+[C:\SSODemo\target\classes\com\example\ssodemo\mapper\MyMapper.class]: Invocation of init method failed; 
+nested exception is tk.mybatis.mapper.MapperException: 
+tk.mybatis.mapper.MapperException: 
+java.lang.ClassCastException: 
+class sun.reflect.generics.reflectiveObjects.TypeVariableImpl cannot be cast to class java.lang.Class 
+(sun.reflect.generics.reflectiveObjects.TypeVariableImpl and java.lang.Class are in module java.base of loader 'bootstrap')
+```
+[同时要注意 @MapperScan里的basePackage不能包含通用mapper（我的是BaseDao）的路径，只包含其他的mapper的路径，不然会报错](https://blog.csdn.net/joy_tom/article/details/110938464)

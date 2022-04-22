@@ -1,4 +1,4 @@
-package com.example.ssodemo.mapper;
+package com.example.ssodemo.tk.mapper;
 
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.common.MySqlMapper;
