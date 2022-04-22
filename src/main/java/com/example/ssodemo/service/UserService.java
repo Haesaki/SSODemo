@@ -1,5 +1,7 @@
 package com.example.ssodemo.service;
 
+import com.example.ssodemo.pojo.Users;
+
 public interface UserService {
     /**
      * 判断用户名是否存在

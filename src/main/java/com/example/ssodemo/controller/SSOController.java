@@ -1,13 +1,26 @@
 package com.example.ssodemo.controller;
 
+import com.example.ssodemo.pojo.Users;
+import com.example.ssodemo.pojo.UsersVO;
+import com.example.ssodemo.service.UserService;
+import com.example.ssodemo.util.HttpJSONResult;
+import com.example.ssodemo.util.JsonUtils;
+import com.example.ssodemo.util.MD5Utils;
+import com.example.ssodemo.util.RedisOperator;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 
 @Controller
 public class SSOController {
@@ -143,7 +156,7 @@ public class SSOController {
 
     @PostMapping("/verifyTmpTicket")
     @ResponseBody
-    public IMOOCJSONResult verifyTmpTicket(String tmpTicket,
+    public HttpJSONResult verifyTmpTicket(String tmpTicket,
                                            HttpServletRequest request,
                                            HttpServletResponse response) throws Exception {
 
@@ -151,12 +164,12 @@ public class SSOController {
         // 使用完毕后，需要销毁临时票据
         String tmpTicketValue = redisOperator.get(REDIS_TMP_TICKET + ":" + tmpTicket);
         if (StringUtils.isBlank(tmpTicketValue)) {
-            return IMOOCJSONResult.errorUserTicket("用户票据异常");
+            return HttpJSONResult.errorUserTicket("用户票据异常");
         }
 
         // 0. 如果临时票据OK，则需要销毁，并且拿到CAS端cookie中的全局userTicket，以此再获取用户会话
         if (!tmpTicketValue.equals(MD5Utils.getMD5Str(tmpTicket))) {
-            return IMOOCJSONResult.errorUserTicket("用户票据异常");
+            return HttpJSONResult.errorUserTicket("用户票据异常");
         } else {
             // 销毁临时票据
             redisOperator.del(REDIS_TMP_TICKET + ":" + tmpTicket);
@@ -166,22 +179,22 @@ public class SSOController {
         String userTicket = getCookie(request, COOKIE_USER_TICKET);
         String userId = redisOperator.get(REDIS_USER_TICKET + ":" + userTicket);
         if (StringUtils.isBlank(userId)) {
-            return IMOOCJSONResult.errorUserTicket("用户票据异常");
+            return HttpJSONResult.errorUserTicket("用户票据异常");
         }
 
         // 2. 验证门票对应的user会话是否存在
         String userRedis = redisOperator.get(REDIS_USER_TOKEN + ":" + userId);
         if (StringUtils.isBlank(userRedis)) {
-            return IMOOCJSONResult.errorUserTicket("用户票据异常");
+            return HttpJSONResult.errorUserTicket("用户票据异常");
         }
 
         // 验证成功，返回OK，携带用户会话
-        return IMOOCJSONResult.ok(JsonUtils.jsonToPojo(userRedis, UsersVO.class));
+        return HttpJSONResult.ok(JsonUtils.jsonToPojo(userRedis, UsersVO.class));
     }
 
     @PostMapping("/logout")
     @ResponseBody
-    public IMOOCJSONResult logout(String userId,
+    public HttpJSONResult logout(String userId,
                                   HttpServletRequest request,
                                   HttpServletResponse response) throws Exception {
 
@@ -195,7 +208,7 @@ public class SSOController {
         // 2. 清除用户全局会话（分布式会话）
         redisOperator.del(REDIS_USER_TOKEN + ":" + userId);
 
-        return IMOOCJSONResult.ok();
+        return HttpJSONResult.ok();
     }
 
     /**

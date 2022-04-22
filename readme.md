@@ -27,3 +27,9 @@ SingleSingOn, SSO 单点登陆可以通过基于用户会话的共享。
 ### CAS
 
 Central Authentication Serivce 用于不同顶级域名之间的单点登陆问题。
+
+## 错误
+```shell
+WARN  AnnotationConfigServletWebServerApplicationContext:591 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'SSOController': Unsatisfied dependency expressed through field 'userService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'userServiceImpl': Unsatisfied dependency expressed through field 'usersMapper'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.example.ssodemo.mapper.UsersMapper' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+```
+为啥
